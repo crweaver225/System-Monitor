@@ -110,17 +110,47 @@ long LinuxParser::UpTime() {
 }
 
 // TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
+long LinuxParser::Jiffies() { return UpTime() *  sysconf(_SC_CLK_TCK); }
 
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid) { return 0; }
+long LinuxParser::ActiveJiffies(int pid) { 
+  long jiffy = 0.0;
+  std::ifstream filestream(kProcDirectory + to_string(pid) + kStatFilename);
+  if (filestream.is_open()) {
+    string line;
+    int index = 0;
+    while(std::getline(filestream, line)) {
+      std::istringstream stringstream(line);
+      string line2;
+      while (std::getline(stringstream, line2, ' ')) {
+        if (index > 12 && index < 17) {
+          jiffy += stol(line2);
+        }
+        index += 1;
+      }
+    }
+  }
+  return jiffy; 
+}
 
 // TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
+long LinuxParser::ActiveJiffies() {
+  long active_jiffies = 0.0;
+  vector<string> cpu_proceses = CpuUtilization();
+  for (string process : cpu_proceses) {
+    active_jiffies += stol(process);
+  }
+  return active_jiffies; 
+}
 
 // TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
+long LinuxParser::IdleJiffies() { 
+  vector<string> cpu_proceses = CpuUtilization();
+  long idle = stol(cpu_proceses[3]);
+  long iowait = stol(cpu_proceses[4]);
+  return idle + iowait; 
+}
 
 // TODO: Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization() { 
