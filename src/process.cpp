@@ -20,8 +20,6 @@ float Process::CpuUtilization() {
     vector<int> process_numbers = LinuxParser::CpuUtilization(Pid());
     int utime = process_numbers[0];
     int stime = process_numbers[1];
-    int cutime = process_numbers[2];
-    int cstime = process_numbers[3];
     int starttime = process_numbers[4];
     float total_time = utime + stime;
     float seconds = LinuxParser::UpTime() - (starttime /  sysconf(_SC_CLK_TCK));
@@ -31,7 +29,7 @@ float Process::CpuUtilization() {
     return cpu_usage; 
 }
 
-const float Process::getExistingCpuUtilization() const {
+float Process::getExistingCpuUtilization() const {
     return cpuUtilization_;
 }
 
